@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade 5 Arts Quiz - የክወናና የዕይታ ጥበባት</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Noto Sans Ethiopic', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .correct-btn {
+            background-color: #10b981 !important; /* Tailwind green-500 */
+            color: white !important;
+            border-color: #10b981 !important;
+        }
+        .incorrect-btn {
+            background-color: #ef4444 !important; /* Tailwind red-500 */
+            color: white !important;
+            border-color: #ef4444 !important;
+        }
+        .disabled-btn {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col items-center py-6 px-4">
+
+    <!-- Header / Logo Area -->
+    <header class="w-full max-w-4xl bg-white rounded-t-xl shadow-md p-6 flex flex-col sm:flex-row items-center justify-between border-b-4 border-blue-600">
+        <div class="flex items-center gap-4 mb-4 sm:mb-0">
+            <!-- Logo Placeholder - Replace src with your actual logo image path -->
+            <img src="https://via.placeholder.com/100x100.png?text=YT+LOGO" alt="YT Tutorial Center Logo" class="h-20 w-20 object-contain rounded-full shadow-sm border-2 border-blue-100">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-800">YT Tutorial Center For Kids</h1>
+                <h2 class="text-lg font-semibold text-gray-600">Grade 5 Arts Comprehensive Quiz</h2>
+            </div>
+        </div>
+        <div id="student-info-display" class="hidden text-right bg-blue-50 p-3 rounded-lg border border-blue-200">
+            <p class="font-bold text-blue-900" id="display-name"></p>
+            <p class="text-sm text-blue-700" id="display-id"></p>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="w-full max-w-4xl bg-white rounded-b-xl shadow-lg p-6 min-h-[60vh] relative">
+        
+        <!-- Screen 1: Registration -->
+        <section id="screen-registration" class="fade-in max-w-md mx-auto py-10">
+            <h3 class="text-xl font-bold text-center mb-6 text-gray-700">Student Identification / የተማሪ መረጃ</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Full Name / ሙሉ ስም:</label>
+                    <input type="text" id="student-name" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-blue-600 transition" placeholder="Enter your full name...">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">ID Number / መለያ ቁጥር:</label>
+                    <input type="text" id="student-id" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-blue-600 transition" placeholder="Enter your ID...">
+                </div>
+                <div class="pt-4">
+                    <button onclick="startQuiz()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition transform hover:-translate-y-0.5">Start Quiz / ፈተናውን ጀምር</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 2: Quiz Engine -->
+        <section id="screen-quiz" class="hidden fade-in flex-col h-full">
+            <div class="flex justify-between items-center mb-6">
+                <span class="bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-sm font-bold" id="question-tracker">Question 1 / 60</span>
+                <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-sm font-bold" id="score-tracker">Score: 0</span>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- Question -->
+            <h2 id="question-text" class="text-xl sm:text-2xl font-bold text-gray-800 mb-6 leading-relaxed"></h2>
+
+            <!-- Options -->
+            <div id="options-container" class="space-y-3 mb-8">
+                <!-- Buttons injected via JS -->
+            </div>
+
+            <!-- Instant Feedback Area -->
+            <div id="feedback-container" class="hidden p-4 rounded-lg mb-6 fade-in border-l-4">
+                <p id="feedback-status" class="font-bold text-lg mb-2"></p>
+                <div class="text-sm space-y-2">
+                    <p id="feedback-am" class="font-semibold text-gray-800"></p>
+                    <p id="feedback-en" class="italic text-gray-600"></p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="mt-auto flex justify-between pt-6 border-t border-gray-200">
+                <button onclick="prevQuestion()" id="btn-prev" class="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold rounded-lg transition disabled:opacity-50 hidden">Back / ወደ ኋላ</button>
+                
+                <button onclick="nextQuestion()" id="btn-next" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition ml-auto">Skip / Next &rarr;</button>
+                
+                <button onclick="showResults()" id="btn-submit" class="hidden px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition ml-auto shadow-md">Submit Exam / አስረክብ</button>
+            </div>
+        </section>
+
+        <!-- Screen 3: Results Dashboard -->
+        <section id="screen-results" class="hidden fade-in py-8 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Quiz Completed!</h2>
+            <p class="text-gray-600 mb-8">Here is your performance summary.</p>
+            
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-8 max-w-md mx-auto mb-8 shadow-inner">
+                <h1 id="final-score" class="text-5xl font-extrabold text-blue-600 mb-4"></h1>
+                <p class="text-lg font-semibold text-gray-700">Out of 60 questions</p>
+                
+                <div class="flex justify-around mt-6 pt-6 border-t border-blue-200">
+                    <div class="text-center">
+                        <span id="correct-count" class="block text-2xl font-bold text-green-600">0</span>
+                        <span class="text-sm text-gray-500">Correct</span>
+                    </div>
+                    <div class="text-center">
+                        <span id="incorrect-count" class="block text-2xl font-bold text-red-600">0</span>
+                        <span class="text-sm text-gray-500">Incorrect/Skipped</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4 max-w-md mx-auto">
+                <button onclick="sendEmail()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition flex justify-center items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>
+                    Send Results to Teacher
+                </button>
+                <button onclick="location.reload()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition">
+                    Restart Quiz
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+<script>
+    // --- Data: 60 Questions ---
+    // Answers Key from prompt:
+    // 1.ለ 2.መ 3.ሐ 4.ሐ 5.መ 6.ሀ 7.መ 8.መ 9.ሐ 10.መ 11.ሐ 12.ሀ 13.ሐ 14.ሐ 15.ሀ 16.ሐ 17.መ 18.መ 19.ሐ 20.ሀ
+    // 21.ሀ 22.ለ 23.ለ 24.ሀ 25.መ 26.ሀ 27.ሐ 28.መ 29.መ 30.ሀ 31.ለ 32.ሀ 33.መ 34.ለ 35.ለ 36.ሐ 37.ለ 38.ለ 39.ሀ 40.ለ
+    // 41.መ 42.ለ 43.ለ 44.ሀ 45.ለ 46.መ 47.ሐ 48.መ 49.ሀ 50.ሐ 51.ለ 52.ሐ 53.ለ 54.ሀ 55.ሀ 56.መ 57.ሐ 58.ለ 59.ሀ 60.ሐ
+
+    const questionsData = [
+        {
+            q: "1. በሀገራችን ልዩ ልዩ ሐውልቶች ላይ ዕድሜን ለመገመት የሚያገለግለው የጥበብ ስራ የቱ ነው?",
+            opts: ["ሀ. ውዝዋዜ", "ለ. የሐረግ ሥራ", "ሐ. የቪዲዮ ቀረጻ", "መ. ድራማ"],
+            ans: 1, // Index 1 is 'ለ'
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። የሐረግ ሥራ ዕድሜ በሀገራችን ከሚገኙ ልዩ ልዩ ጥንታዊ ሐውልቶች ጋር በማነፃፀር ይገመታል።",
+            expEn: "Correct answer is 'B'. The age of Harag (interlaced) artwork is estimated by comparing it with ancient obelisks found in our country."
+        },
+        {
+            q: "2. ከሚከተሉት የትያትር አላባውያን ያልሆነው የቱ ነው?",
+            opts: ["ሀ. አዘጋጅ", "ለ. ከዋኞች", "ሐ. ተደራሲያን", "መ. ሐውልት"],
+            ans: 3, 
+            expAm: "ትክክለኛ መልስ 'መ' ነው። ሐውልት የዕይታ ጥበብ እንጂ የትያትር አላባዊ (ክፍል) አይደለም።",
+            expEn: "Correct answer is 'D'. A statue (obelisk) is a visual art form, not an element of theater. The others are direct theater elements."
+        },
+        {
+            q: "3. መካከለኛ ወፍራም የሆነውና በታዳጊ ጎረምሶች የምንሰማው የድምጽ ምድብ የቱ ነው?",
+            opts: ["ሀ. ቤዝ", "ለ. ሶፕራኖ", "ሐ. ቴኖር", "መ. አልቶ"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። ቴኖር በመካከለኛ ወፍራም የድምፅ ክልል የሚገኝ እና በተለይ በታዳጊ ጎረምሶች የሚሰማ የድምፅ ዓይነት ነው።",
+            expEn: "Correct answer is 'C'. Tenor is a medium-thick voice type typically heard in adolescent boys."
+        },
+        {
+            q: "4. ፊት ለፊት፣ ከጎንና ከላይ በኩል የሚታይ አድርጎ የማሳያ ዘዴ ምን ይባላል?",
+            opts: ["ሀ. 2ዲ", "ለ. 1ዲ", "ሐ. 3ዲ", "መ. 4ዲ"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። 3ዲ (ባለ ሶስት አውታር መጠን) ነገሮችን ከፊት፣ ከጎንና ከላይ በኩል አሳይቶ እውነተኛ ምስልን ይፈጥራል።",
+            expEn: "Correct answer is 'C'. 3D (Three-dimensional) represents objects showing the front, side, and top, giving depth."
+        },
+        {
+            q: "5. የቦታን፣ የጊዜንና የገጸ-ባህርይን የጥምረት ክንውን በጥቅል ለመግለጽ የሚጠቅመው የቀረጻ አይነት የቱ ነው?",
+            opts: ["ሀ. የቅርብ እይታ", "ለ. የአጠቃላይ እይታ", "ሐ. የመካከለኛ እይታ", "መ. የሩቅ እይታ"],
+            ans: 3, // መ
+            expAm: "ትክክለኛ መልስ 'መ' ነው። የሩቅ እይታ (Long Shot) የቦታን፣ የጊዜንና የገጸ-ባህሪያትን አጠቃላይ ጥምረት ለማሳየት ይረዳል።",
+            expEn: "Correct answer is 'D'. A Long Shot is used to broadly establish the setting, time, and character interactions together."
+        },
+        {
+            q: "6. እጅግ በጣም ቀጭን የሆኑ የህፃናትና የሴቶች ድምጽ ምድብ ምን ይባላል?",
+            opts: ["ሀ. ሶፕራኖ", "ለ. አልቶ", "ሐ. ቴኖር", "መ. ቤዝ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። ሶፕራኖ እጅግ በጣም ቀጭን የሆነ የሴቶችና የህፃናት የድምፅ ክልል ነው።",
+            expEn: "Correct answer is 'A'. Soprano is the highest and thinnest vocal range, typically found in women and children."
+        },
+        {
+            q: "7. የተለያዩ ድምፆች በኅብር ሁለትና ከእዚያ በላይ ተቀናጅተው የምናደምጣቸው ሙዚቃዎች ምን ይባላሉ?",
+            opts: ["ሀ. ዜማ", "ለ. ቴምፖ", "ሐ. ስልተ ምት", "መ. ህብረ-ሙዚቃ (Harmony)"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። ህብረ-ሙዚቃ (Harmony) የተለያዩ ድምፆች በአንድነት ተቀናጅተው የሚሰሙበት ጥበብ ነው።",
+            expEn: "Correct answer is 'D'. Harmony is the combination of simultaneously sounded musical notes to produce chords and chord progressions."
+        },
+        {
+            q: "8. Presto የሚለው የፍጥነት ልኬት በደቂቃ ስንት ምቶችን ይይዛል?",
+            opts: ["ሀ. 40-60", "ለ. 60-66", "ሐ. 108-120", "መ. 169-200"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። Presto በሙዚቃ እጅግ በጣም ፈጣን (Very Fast) ማለት ሲሆን፣ በደቂቃ ከ169-200 ምት አለው።",
+            expEn: "Correct answer is 'D'. Presto indicates a very fast tempo, measuring between 169 to 200 beats per minute (BPM)."
+        },
+        {
+            q: "9. ኳስን ወደ መሬት አንጥረን ስንይዝ በሙዚቃ ምንን ያመለክታል?",
+            opts: ["ሀ. ዜማ", "ለ. ዳይናሚክ", "ሐ. ምት", "መ. ቴምፖ"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። ይህ ተግባር እኩል የሆነ የጊዜ ፍሰት ወይም 'ምት'ን (Beat) በተግባር ያሳያል።",
+            expEn: "Correct answer is 'C'. Bouncing a ball and catching it perfectly illustrates a steady musical 'Beat'."
+        },
+        {
+            q: "10. mp (mezzo-piano) የሚለው ምልክት ምንን ይወክላል?",
+            opts: ["ሀ. በጣም ጮክ", "ለ. ለስላሳ", "ሐ. በጣም ለስላሳ", "መ. በመካከለኛ ለስላሳ"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። በሙዚቃ ዳይናሚክስ፣ mp (mezzo-piano) ማለት 'በመጠኑ ለስላሳ' ወይም 'በመካከለኛ ለስላሳ' ማለት ነው።",
+            expEn: "Correct answer is 'D'. In musical dynamics, 'mp' stands for mezzo-piano, meaning 'moderately soft'."
+        },
+        {
+            q: "11. ከተዘረዘሩት ውስጥ መሰረታዊ የመስመር አይነት ያልሆነው የቱ ነው?",
+            opts: ["ሀ. ቋሚ መስመር", "ለ. አግድም መስመር", "ሐ. ሉላዊ መስመር", "መ. ሰያፍ መስመር"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። ሉላዊ መስመር የሚባል መሰረታዊ የመስመር ዓይነት የለም፤ ቋሚ፣ አግድምና ሰያፍ ግን አሉ።",
+            expEn: "Correct answer is 'C'. Spherical line is not a basic line type in drawing, whereas vertical, horizontal, and diagonal are."
+        },
+        {
+            q: "12. የድምፅ ከፍታና ዝቅታን (ኸርዝን) መጠን የሚለካው ምንድን ነው?",
+            opts: ["ሀ. የክረት መጠን (Pitch)", "ለ. ዜማ", "ሐ. ህብረ ድምፅ", "መ. ቴምፖ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። የክረት መጠን (Pitch) የድምፅን የኸርዝ ልኬት (ከፍታና ዝቅታ) ይወስናል።",
+            expEn: "Correct answer is 'A'. Pitch measures the highness or lowness of a sound frequency (Hz)."
+        },
+        {
+            q: "13. ቢጫ ቀለም እና ሰማያዊ ቀለም ሲቀላቀሉ ምን ቀለም ይሰጣሉ?",
+            opts: ["ሀ. ብርትኳናማ", "ለ. ወይን ጠጅ", "ሐ. አረንጓዴ", "መ. ቀይ"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። ቢጫና ሰማያዊ ሲደባለቁ የሁለተኛ ደረጃ ቀለም የሆነውን አረንጓዴ ይሰጣሉ።",
+            expEn: "Correct answer is 'C'. Mixing the primary colors yellow and blue creates the secondary color green."
+        },
+        {
+            q: "14. የተውኔት ጽሁፍ በደራሲው ምናብ የሚፈጠር ሆኖ ምን ይባላል?",
+            opts: ["ሀ. የመከወኛ ቦታ", "ለ. ጥበባዊ ግብዓት", "ሐ. ጽህፈት-ተውኔት", "መ. አዘጋጅ"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። በደራሲው ምናብ የሚፃፈው ድርሰት 'ጽህፈት-ተውኔት' (Play script) ይባላል።",
+            expEn: "Correct answer is 'C'. The literary work created in the playwright's imagination is called a Play script (Tsehefet-Tewnet)."
+        },
+        {
+            q: "15. የሙዚቃን የፍጥነት ልኬት የሚያመለክተው ቃል ማን ይባላል?",
+            opts: ["ሀ. ቴምፖ", "ለ. ዜማ", "ሐ. ዳይናሚክስ", "መ. ስልተ ምት"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። ቴምፖ (Tempo) የሙዚቃን የፍጥነት ወይም የዝግታ ልኬት የሚገልጽ ነው።",
+            expEn: "Correct answer is 'A'. Tempo refers to the speed or pace of a given piece of music."
+        },
+        {
+            q: "16. ሙሉ (Whole) የድምፅ ኖታ ዋጋ ስንት ነው?",
+            opts: ["ሀ. 1 ምት", "ለ. 2 ምት", "ሐ. 4 ምት", "መ. 1/2 ምት"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። ሙሉ ኖታ (Whole note) አራት የምት ጊዜ ቆይታ አለው።",
+            expEn: "Correct answer is 'C'. A whole note in music holds a duration of 4 beats."
+        },
+        {
+            q: "17. በውዝዋዜ ውስጥ ክብ ሰርቶ መሽከርከር፣ ወደፊትና ወደኃላ መንቀሳቀስ ምን ይባላል?",
+            opts: ["ሀ. የሰውነት አቋቋም", "ለ. ጥበባዊ ግብዓት", "ሐ. ጽህፈት ተውኔት", "መ. የቦታ አያያዝና አጠቃቀም"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። እነዚህ እንቅስቃሴዎች ተወዛዋዦች መድረኩን እንዴት እንደሚጠቀሙ (የቦታ አያያዝና አጠቃቀም) ያሳያሉ።",
+            expEn: "Correct answer is 'D'. Moving in circles, forward and backward, relates to Space management/usage in dance."
+        },
+        {
+            q: "18. ከሚከተሉት ውስጥ መሰረታዊ መስመር የሆነው የቱ ነው?",
+            opts: ["ሀ. ቋሚ", "ለ. አግድም", "ሐ. ጠመዝማዛ", "መ. ሁሉም መልስ ናቸው"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። ቋሚ፣ አግድምና ጠመዝማዛ ሁሉም በዕይታ ጥበብ የመሰረታዊ መስመር ዓይነቶች ናቸው።",
+            expEn: "Correct answer is 'D'. Vertical, horizontal, and spiral/curved are all fundamental types of lines in art."
+        },
+        {
+            q: "19. 1/8 የድምፅ ኖታ ምን ያህል የቆይታ ዋጋ አለው?",
+            opts: ["ሀ. 4 ምት", "ለ. 1 ምት", "ሐ. 1/2 ምት", "መ. 2 ምት"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። 1/8 (Eighth note) የግማሽ ምት (1/2) የቆይታ ዋጋ አለው።",
+            expEn: "Correct answer is 'C'. An eighth note has a duration of exactly 1/2 (half) of a beat."
+        },
+        {
+            q: "20. የድምፅን ጩኸትና ልስላሴ መጠን የሚገልጸው የሙዚቃ አላባዊ ምን ይባላል?",
+            opts: ["ሀ. ኃይለ ድምፅ", "ለ. ህብረ ድምፅ", "ሐ. ቴምፖ", "መ. የጊዜ ቆይታ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። ኃይለ ድምፅ (Dynamics) የድምፅን ከፍተኛነት ወይም ልስላሴ የሚለካ አላባዊ ነው።",
+            expEn: "Correct answer is 'A'. Dynamics in music dictates the volume (loudness or softness) of the sound."
+        },
+        {
+            q: "21. በዕይታ ጥበባት ውስጥ በእንቅስቃሴ የሚፈጠር ምልክት የሆነው አላባዊ የቱ ነው?",
+            opts: ["ሀ. መስመር", "ለ. ቅርጽ", "ሐ. ቀለም", "መ. ሻካራና ልስላሴ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። መስመር በእንቅስቃሴ አማካኝነት የሚፈጠር መሰረታዊ የዕይታ ጥበብ ምልክት ነው።",
+            expEn: "Correct answer is 'A'. A line is a mark made by a moving point, essential in visual arts."
+        },
+        {
+            q: "22. ግማሽ (half) የድምፅ ኖታ ስንት የምት ጊዜ ቆይታ አለው?",
+            opts: ["ሀ. 4 ምት", "ለ. 2 ምት", "ሐ. 1 ምት", "መ. 1/2 ምት"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። ግማሽ ኖታ (Half note) ሁለት (2) የምት ቆይታ አለው።",
+            expEn: "Correct answer is 'B'. A half note receives a duration of 2 full beats."
+        },
+        {
+            q: "23. ቀይ ቀለም እና ቢጫ ቀለም ሲቀላቀሉ የትኛውን ሁለተኛ ደረጃ ቀለም ይሰጣሉ?",
+            opts: ["ሀ. አረንጓዴ", "ለ. ብርትኳናማ", "ሐ. ወይን ጠጅ", "መ. ሰማያዊ"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። ቀይ እና ቢጫ መሥራች ቀለማት ሲቀላቀሉ ብርትኳናማ ቀለም ይፈጥራሉ።",
+            expEn: "Correct answer is 'B'. Mixing red and yellow primary colors results in the secondary color orange."
+        },
+        {
+            q: "24. የሰውነት ቅርፅን መሰረት ያደረገ አቋቋም የትኛው ጥበብ አላባዊ ነው?",
+            opts: ["ሀ. የውዝዋዜ", "ለ. የሙዚቃ", "ሐ. የትያትር", "መ. የዕይታ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። የሰውነት አቋቋም እና ቅርፅ ከውዝዋዜ (Dance) መሰረታዊ አላባውያን አንዱ ነው።",
+            expEn: "Correct answer is 'A'. Body posture and form are fundamental elements of Dance art."
+        },
+        {
+            q: "25. ሦስተኛ ደረጃ ቀለማት (Tertiary colors) ከሚባሉት ውስጥ አንዱ የቱ ነው?",
+            opts: ["ሀ. ቀይ", "ለ. ቢጫ", "ሐ. ሰማያዊ", "መ. ቢጫማ ብርትኳን"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። ቢጫማ ብርትኳን መሥራችና ሁለተኛ ደረጃ ቀለም ሲቀላቀሉ የሚገኝ ሶስተኛ ደረጃ ቀለም ነው።",
+            expEn: "Correct answer is 'D'. Yellow-orange is a tertiary color formed by mixing a primary and secondary color."
+        },
+        {
+            q: "26. በቀላሉ ማየትና መረዳት እንድንችል የሚረዳን አዎንታዊና አሉታዊ ባህሪ ያለው የዕይታ ጥበብ አላባዊ የቱ ነው?",
+            opts: ["ሀ. አካባቢያዊ ቦታ", "ለ. ህብረ ቀለም", "ሐ. ንጣትና ጥቁረት", "መ. ሐረግ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። አካባቢያዊ ቦታ (Space) አዎንታዊና አሉታዊ (Positive & Negative) ክፍሎችን የያዘ ነው።",
+            expEn: "Correct answer is 'A'. Space contains positive and negative areas that help us visualize composition."
+        },
+        {
+            q: "27. አንድ አስራ ስድስተኛ (1/16) የዕረፍት ኖታ ዋጋ ስንት ነው?",
+            opts: ["ሀ. 1 ምት", "ለ. 2 ምት", "ሐ. 1/4 ምት", "መ. 4 ምት"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። አንድ አስራ ስድስተኛ ኖታ የሩብ (1/4) ምት የቆይታ ጊዜ አለው።",
+            expEn: "Correct answer is 'C'. A sixteenth note has a duration of exactly 1/4 of a beat."
+        },
+        {
+            q: "28. fff (Fortississimo) የሚለው ምልክት ትርጉሙ ምንድን ነው?",
+            opts: ["ሀ. በጣም ለስላሳ", "ለ. በመካከለኛ ጩኸት", "ሐ. ለስላሳ", "መ. እጅግ በጣም ጮክ ያለ"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። fff በሙዚቃ እጅግ በጣም ጮክ ያለ (Extremely loud) ድምፅን ያሳያል።",
+            expEn: "Correct answer is 'D'. 'fff' stands for fortississimo, instructing the musician to play extremely loud."
+        },
+        {
+            q: "29. Adagio የሚለው የቴምፖ አይነት በደቂቃ ምን ያህል ምቶች አሉት?",
+            opts: ["ሀ. 120-169", "ለ. 40-60", "ሐ. 200", "መ. 66-76"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። Adagio ዝግ ያለ ፍጥነት ሲሆን በደቂቃ ከ 66-76 ምቶች አሉት።",
+            expEn: "Correct answer is 'D'. Adagio means slow tempo, typically ranging from 66 to 76 beats per minute."
+        },
+        {
+            q: "30. ትያትር ተዘጋጅቶ በሚቀርብበት ጊዜ በመገኘት የሚታደሙ ሰዎች እነማን ናቸው?",
+            opts: ["ሀ. ተደራሲያን", "ለ. አዘጋጆች", "ሐ. ተዋንያን", "መ. ደራሲያን"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። ተደራሲያን (ታዳሚዎች) ትያትሩን የሚመለከቱት ተመልካቾች ናቸው።",
+            expEn: "Correct answer is 'A'. The audience (Tederasiyan) are the people who watch and attend the theatrical performance."
+        },
+        {
+            q: "31. በአይን መተያየትንና ወገብን ተቃቅፎ መጨፈርን የሚያካትተው የውዝዋዜ አላባዊ የቱ ነው?",
+            opts: ["ሀ. የቦታ አያያዝ", "ለ. ከአጣማሪ ጋር እንቅስቃሴ ማቀናጀት", "ሐ. የሰውነት አቋቋም", "መ. የስዕል ንድፍ"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። ከሌላ ሰው ጋር በአይን መተያየትና መጣመር 'ከአጣማሪ ጋር እንቅስቃሴ ማቀናጀት' ይባላል።",
+            expEn: "Correct answer is 'B'. Making eye contact and dancing closely with a partner falls under coordinating movement with a partner."
+        },
+        {
+            q: "32. ካንገት በላይ ያሉ እይታዎችን በመምረጥ የተዋናዩን አትኩረታዊ እንቅስቃሴ ለማሳየት የሚጠቅመው የቀረጻ አይነት የቱ ነው?",
+            opts: ["ሀ. የቅርብ እይታ", "ለ. የመካከለኛ እይታ", "ሐ. የሩቅ እይታ", "መ. የአጠቃላይ እይታ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። የቅርብ እይታ (Close-up shot) የፊትን ስሜትና ትኩረት በቅርብ አጉልቶ ያሳያል።",
+            expEn: "Correct answer is 'A'. A Close-up shot focuses from the neck up to deeply capture the character's facial expressions and focus."
+        },
+        {
+            q: "33. ተፈጥራዊ ባህሪ መልክንና ቅርፅን በዓይን መለየት የሚያስችል የዕይታ ጥበብ ዘዴ የቱ ነው?",
+            opts: ["ሀ. መስመር", "ለ. ማመጣጠን", "ሐ. ቀለም", "መ. ሻካራና ልስላሴ (Texture)"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። ሻካራና ልስላሴ የቁስን ተፈጥሯዊ ገጽታ ባህሪ የሚለይበት አላባዊ ነው።",
+            expEn: "Correct answer is 'D'. Texture visually or physically describes the surface quality (smoothness or roughness) of an object."
+        },
+        {
+            q: "34. በደቂቃ ከ120-169 የምት ፍጥነት ያለው የቴምፖ አይነት የቱ ነው?",
+            opts: ["ሀ. Andante", "ለ. Allegro", "ሐ. Largo", "መ. Presto"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። Allegro ማለት ፈጣን (Fast) ማለት ሲሆን በደቂቃ ከ120-169 ምቶች አሉት።",
+            expEn: "Correct answer is 'B'. Allegro indicates a fast and bright tempo, ranging from 120-169 BPM."
+        },
+        {
+            q: "35. በሠው ተፈጥሮ ድምፅ ወይም በሙዚቃ መሳሪያዎች የድምፅ ውስንነት ጥራት ምን ይባላል?",
+            opts: ["ሀ. ስልተ ምት", "ለ. የድምፅ ቀለም (Timber)", "ሐ. ዜማ", "መ. ቴምፖ"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። የድምፅ ቀለም (Timber) የአንድን ድምፅ ምንነት ከሌላው ለይተን የምናውቅበት የድምፅ ጥራት ነው።",
+            expEn: "Correct answer is 'B'. Timbre is the unique tone color or quality of a sound that distinguishes different voices or instruments."
+        },
+        {
+            q: "36. የሐረግ ሥራ ዕድሜ ከምን ጋር በማገናዘብ ይገመገማል?",
+            opts: ["ሀ. ከውዝዋዜ", "ለ. ከዘመናዊ ሙዚቃ", "ሐ. ከልዩ ልዩ ሐውልቶች", "መ. ከፊልም"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። የሐረግ ሥራ ጥንታዊነት ከሀገራችን የድንጋይ ሐውልቶችና ቅርፃ ቅርጾች ጋር ይነፃፀራል።",
+            expEn: "Correct answer is 'C'. The age of Harag is evaluated by comparing it with various ancient stone obelisks."
+        },
+        {
+            q: "37. ባለ ሁለት አውታረ መጠን (2ዲ) የሆነው ምስለ ቅርጽ የቱ ነው?",
+            opts: ["ሀ. ሉል", "ለ. ክብ (ሰርክል)", "ሐ. ፒራሚድ", "መ. ሲሊንደር"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። ክብ ርዝመትና ስፋት ብቻ ያለው ባለ ሁለት አውታር (2D) ዝርግ ምስል ነው።",
+            expEn: "Correct answer is 'B'. A circle is a flat, 2D shape with only length and width, unlike 3D objects like spheres."
+        },
+        {
+            q: "38. ተዋንያን የወከሏቸውን ገጸ-ባህርያት እንዲመስሉ የሚያግዙት ነገሮች ምን ይባላሉ?",
+            opts: ["ሀ. የመከወኛ ቦታ", "ለ. ጥበባዊ ግብዓቶች", "ሐ. ጽህፈት ተውኔት", "መ. ተደራሲያን"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። አልባሳትና የመዋቢያ ቁሳቁሶች (ጥበባዊ ግብዓቶች) ገጸ ባህሪያቱን አሳማኝ ያደርጓቸዋል።",
+            expEn: "Correct answer is 'B'. Artistic elements like costumes and makeup help actors realistically portray their characters."
+        },
+        {
+            q: "39. በጽሁፍ የቀረቡ የድርሰቱ አለም ፍጡራንን (ገጸ ባህርያትን) በመወከል የሚያቀርቡ ሰዎች እነማን ናቸው?",
+            opts: ["ሀ. ከዋኞች", "ለ. ተደራሲያን", "ሐ. አዘጋጆች", "መ. ደራሲያን"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። ከዋኞች (ተዋንያን) የድርሰቱን ገጸ ባህሪያት ተላብሰው በመድረክ የሚሰሩ ባለሙያዎች ናቸው።",
+            expEn: "Correct answer is 'A'. Actors/Performers are the people who embody and portray the written characters on stage."
+        },
+        {
+            q: "40. የቀለማትን ብርሃናማነትና ጥቁረት ሂደት የምንገልፅበት ዘዴ ምን ይባላል?",
+            opts: ["ሀ. ሻካልሴ", "ለ. የንጣትና ጥቁረት ሂደት (Value)", "ሐ. ማመጣጠን", "መ. ቅርጽ"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። ቫልዩ (Value) የቀለሙን ጥቁረትና ብርሃናማነት (ንጣት) የሚገልጽ ጥበባዊ ቃል ነው።",
+            expEn: "Correct answer is 'B'. Value refers to the lightness or darkness of a color in art."
+        },
+        {
+            q: "41. በተለምዶ ጎርናና ድምፅ የምንለው (በጎረምሶችና ትልልቅ ሰዎች) ድምጽ ምድብ የቱ ነው?",
+            opts: ["ሀ. ሶፕራኖ", "ለ. አልቶ", "ሐ. ቴኖር", "መ. ቤዝ"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። ቤዝ (Bass) የወንዶች በጣም ወፍራም እና ጎርናና የሆነ የድምፅ ክልል ነው።",
+            expEn: "Correct answer is 'D'. Bass is the lowest, deepest male singing voice."
+        },
+        {
+            q: "42. የፊልም ታሪክ የሚከናወንበትን ቦታ ከነሙሉ ድባቡና አካባቢው የሚያሳየው የቀረጻ አይነት የቱ ነው?",
+            opts: ["ሀ. የቅርብ እይታ", "ለ. የአጠቃላይ እይታ", "ሐ. የመካከለኛ እይታ", "መ. የሩቅ እይታ"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። የአጠቃላይ እይታ (Establishing Shot) ቦታውን ከነሙሉ ድባቡ ሰፋ አድርጎ ያሳያል።",
+            expEn: "Correct answer is 'B'. An overall/establishing shot shows the entire scene and environment in full context."
+        },
+        {
+            q: "43. f (forte) የሚለው የኃይለ ድምፅ ምልክት ምንን ያመለክታል?",
+            opts: ["ሀ. ለስላሳ", "ለ. ጮክ ያለ ድምፅ", "ሐ. በጣም ለስላሳ", "መ. በመካከለኛ ጩኸት"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። Forte (f) በጣሊያንኛ 'ጮክ ያለ ድምፅ' ማለት ሲሆን ድምፁን ከፍ አድርጎ ለመጫወት ያዛል።",
+            expEn: "Correct answer is 'B'. Forte (f) is a musical direction meaning 'loud'."
+        },
+        {
+            q: "44. 'Largo' የሚለው የቴምፖ አይነት በደቂቃ ምን ያህል የምት ፍጥነት አለው?",
+            opts: ["ሀ. 40-60", "ለ. 60-66", "ሐ. 66-76", "መ. 169-200"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። Largo እጅግ በጣም ዝግ ያለ ፍጥነትን የሚወክል ሲሆን፣ 40-60 ምት በደቂቃ አለው።",
+            expEn: "Correct answer is 'A'. Largo denotes a very slow tempo, resting between 40-60 beats per minute."
+        },
+        {
+            q: "45. ውዝዋዜ ስሜትን ከመግለጽ ባሻገር ምንን ገላጭ ነው?",
+            opts: ["ሀ. ጩኸትን", "ለ. ሐሳብን", "ሐ. ቀለምን", "መ. ዝምታን"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። ውዝዋዜ ስሜትን ብቻ ሳይሆን የተወሰነ 'ሐሳብን' ወይም መልዕክትን በእንቅስቃሴ የሚገልጽ ጥበብ ነው።",
+            expEn: "Correct answer is 'B'. Dance is not only an expression of emotion but also a medium to convey thoughts/ideas."
+        },
+        {
+            q: "46. ቀይ ቀለም እና ሰማያዊ ቀለም ሲቀላቀሉ የትኛውን ቀለም ይሰጣሉ?",
+            opts: ["ሀ. ብርትኳናማ", "ለ. ቢጫ", "ሐ. አረንጓዴ", "መ. ወይን ጠጅ"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። ቀይና ሰማያዊ መሥራች ቀለማት ሲደባለቁ 'ወይን ጠጅ' (Purple) ሁለተኛ ደረጃ ቀለም ይፈጥራሉ።",
+            expEn: "Correct answer is 'D'. Mixing the primary colors red and blue produces the secondary color purple."
+        },
+        {
+            q: "47. የተለያዩ ድምፃች ከስልተ ምት ጋር በአንድ ተዋህደው የምናዳምጠው ሙዚቃ ምን ይባላል?",
+            opts: ["ሀ. የድምፅ ቀለም", "ለ. ዳይናሚክ", "ሐ. ዜማ (Melody)", "መ. ቴምፖ"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። ዜማ (Melody) ድምፆችና ስልተ-ምቶች ተዋህደው የሚፈጥሩት ጣዕም ያለው ሙዚቃ ነው።",
+            expEn: "Correct answer is 'C'. Melody is the pleasing sequence of musical notes and rhythm combined."
+        },
+        {
+            q: "48. ከሚከተሉት ውስጥ ባለሦስት አውታረ መጠን (3ዲ) ቅርጽ ያልሆነው የቱ ነው?",
+            opts: ["ሀ. ሉል", "ለ. ፒራሚድ", "ሐ. ኮን", "መ. እኩል አራት ማዕዘን"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። እኩል አራት ማዕዘን 2ዲ ቅርጽ እንጂ ባለ ሶስት አቅጣጫ (3ዲ) አይደለም።",
+            expEn: "Correct answer is 'D'. A flat square is a 2D shape, unlike 3D shapes such as spheres, pyramids, and cones."
+        },
+        {
+            q: "49. የጥበባዊ ስራዎች ሁሉ የበላይ መሪ የሆነው ባለሙያ ማን ነው?",
+            opts: ["ሀ. አዘጋጅ", "ለ. ተዋናይ", "ሐ. ተመልካች", "መ. ፀሀፊ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። አዘጋጅ (Director) የመድረኩን አጠቃላይ ጥበባዊ ክንውን የሚመራ የበላይ ኃላፊ ነው።",
+            expEn: "Correct answer is 'A'. The Director is the ultimate overseer and leader of all artistic processes in a production."
+        },
+        {
+            q: "50. p (piano) የሚለው የኃይለ ድምፅ ምልክት ትርጉም ምንድን ነው?",
+            opts: ["ሀ. በጣም ጮክ", "ለ. እጅግ ለስላሳ", "ሐ. ለስላሳ", "መ. መካከለኛ"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። Piano (p) በሙዚቃ ቋንቋ ድምፁን 'ለስላሳ' አድርጎ መጫወትን ያመለክታል።",
+            expEn: "Correct answer is 'C'. Piano (p) is a musical direction instructing the performer to play softly."
+        },
+        {
+            q: "51. ወፍራም የሴት ድምጽ የሚባለው የድምጽ ምድብ የቱ ነው?",
+            opts: ["ሀ. ቤዝ", "ለ. አልቶ", "ሐ. ሶፕራኖ", "መ. ቴኖር"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። አልቶ (Alto) መካከለኛ ወፍራም የሆነ የሴቶች የድምፅ ክልል ነው።",
+            expEn: "Correct answer is 'B'. Alto is the lowest and thickest standard female singing voice."
+        },
+        {
+            q: "52. በደቂቃ ከ76-108 የምት ፍጥነት ያለው 'Andante' ትርጉሙ ምንድን ነው?",
+            opts: ["ሀ. እጅግ በጣም ፍጣን", "ለ. ዝግታ", "ሐ. መካከለኛ ዝግታ", "መ. በጣም ፍጣን"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። Andante అంటే በመካከለኛ ዝግታ (Moving along/Walking pace) ማለት ነው።",
+            expEn: "Correct answer is 'C'. Andante implies a moderately slow, walking pace tempo."
+        },
+        {
+            q: "53. ሩብ (quarter) የድምፅ ኖታ ስንት የምት ጊዜ ቆይታ አለው?",
+            opts: ["ሀ. 4 ምት", "ለ. 1 ምት", "ሐ. 2 ምት", "መ. 1/4 ምት"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። ሩብ ኖታ (Quarter note) በትክክል የአንድ (1) ምት የቆይታ ጊዜ አለው።",
+            expEn: "Correct answer is 'B'. A quarter note holds exactly 1 beat of time."
+        },
+        {
+            q: "54. ቀይ፣ ቢጫ እና ሰማያዊ ቀለማት በየትኛው ምድብ ይመደባሉ?",
+            opts: ["ሀ. መሥራች (አንደኛ ደረጃ)", "ለ. ሁለተኛ ደረጃ", "ሐ. ሦስተኛ ደረጃ", "መ. አራተኛ ደረጃ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። እነዚህ ሶስቱ ቀለሞች ሌሎችን ቀለሞች በሙሉ የምናገኝባቸው 'መሥራች ቀለማት' (Primary colors) ናቸው።",
+            expEn: "Correct answer is 'A'. Red, yellow, and blue are Primary colors from which all other colors are derived."
+        },
+        {
+            q: "55. ሙዚቃን በእኩል የጊዜ ፍሰት በትክክል እንድንጫወት የሚያደርግ የአጨዋወት መሰረት ምን ይባላል?",
+            opts: ["ሀ. ስልተ ምት", "ለ. ቴምፖ", "ሐ. ዜማ", "መ. ቃና"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። ስልተ ምት (Rhythm) ድምፆችን በእኩል የጊዜ ፍሰት በማስቀመጥ ሙዚቃው ስርዓት እንዲኖረው ያደርጋል።",
+            expEn: "Correct answer is 'A'. Rhythm provides the foundational, evenly spaced flow of time in musical performance."
+        },
+        {
+            q: "56. የሐረግ ሥራዎች እና የስዕል ስራዎች ከምን ጋር ተመሳሳይነት አላቸው?",
+            opts: ["ሀ. ከውዝዋዜ ጋር", "ለ. ከሙዚቃ ጋር", "ሐ. ከፊልም ጋር", "መ. ከድንጋይና ከእንጨት ቅርፃ ቅርጽ ጋር"],
+            ans: 3,
+            expAm: "ትክክለኛ መልስ 'መ' ነው። የሐረግ እና የሥዕል ስራ ጥበባት በጥንት ከድንጋይና ከእንጨት የሚሰሩ የቅርፃ ቅርጽ ስራዎች ጋር የጠበቀ ቁርኝት አላቸው።",
+            expEn: "Correct answer is 'D'. Harag and visual arts share deep historical similarities with stone and wood carvings."
+        },
+        {
+            q: "57. በጣም ጮክ ያለ ድምፅን የሚያመለክተው የጣሊያንኛ ቃል ምኅፃረ ቃል የቱ ነው?",
+            opts: ["ሀ. f", "ለ. mf", "ሐ. ff", "መ. ppp"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። ff (Fortissimo) ማለት 'በጣም ጮክ ያለ' ማለት ነው።",
+            expEn: "Correct answer is 'C'. 'ff' stands for fortissimo, meaning 'very loud'."
+        },
+        {
+            q: "58. የነገሮች መጠን በአይናችን እንደተመለከትናቸው በትክክል ተመጣጥኖ መቀመጥ ምን ይባላል?",
+            opts: ["ሀ. ቅርጽ", "ለ. ማመጣጠን (Proportion)", "ሐ. ሐረግ", "መ. ሻካራነት"],
+            ans: 1,
+            expAm: "ትክክለኛ መልስ 'ለ' ነው። ማመጣጠን ነገሮች በሥዕል ሲቀመጡ የትልቁና የትንሹ መጠን እውነተኛ ገፅታውን ጠብቆ እንዲቀመጥ ማድረግ ነው።",
+            expEn: "Correct answer is 'B'. Proportion ensures objects are accurately scaled relative to one another in art."
+        },
+        {
+            q: "59. ppp በሚለው የኃይለ ድምፅ ምኅፃረ ቃል የሚወከለው የትኛው ነው?",
+            opts: ["ሀ. እጅግ በጣም የለሰለሰ", "ለ. በጣም ለስላሳ", "ሐ. በመካከለኛ ለስላሳ", "መ. ለስላሳ"],
+            ans: 0,
+            expAm: "ትክክለኛ መልስ 'ሀ' ነው። ppp (Pianississimo) ማለት እጅግ በጣም የለሰለሰ ድምፅ ማለት ነው።",
+            expEn: "Correct answer is 'A'. 'ppp' stands for Pianississimo, instructing the player to play extremely softly."
+        },
+        {
+            q: "60. ከፊል የሰውነት ክፍልን (በሰው ከወገብ በላይ) የሚቀርጸው የካሜራ እይታ ምን ይባላል?",
+            opts: ["ሀ. የአጠቃላይ እይታ", "ለ. የቅርብ እይታ", "ሐ. የመካከለኛ እይታ", "መ. የሩቅ እይታ"],
+            ans: 2,
+            expAm: "ትክክለኛ መልስ 'ሐ' ነው። የመካከለኛ እይታ (Medium shot) የሰውን አካል ከወገብ በላይ አጉልቶ ያሳያል።",
+            expEn: "Correct answer is 'C'. A Medium shot typically frames a subject from the waist up."
+        }
+    ];
+
+    // --- Logic Variables ---
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let studentName = "";
+    let studentID = "";
+    // User answer array: store the chosen index to prevent changing answers
+    let userAnswers = new Array(questionsData.length).fill(null);
+
+    // --- DOM Elements ---
+    const sRegistration = document.getElementById("screen-registration");
+    const sQuiz = document.getElementById("screen-quiz");
+    const sResults = document.getElementById("screen-results");
+    
+    const infoDisplay = document.getElementById("student-info-display");
+    const displayName = document.getElementById("display-name");
+    const displayID = document.getElementById("display-id");
+
+    const qText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const feedbackContainer = document.getElementById("feedback-container");
+    const feedbackStatus = document.getElementById("feedback-status");
+    const feedbackAm = document.getElementById("feedback-am");
+    const feedbackEn = document.getElementById("feedback-en");
+
+    const btnPrev = document.getElementById("btn-prev");
+    const btnNext = document.getElementById("btn-next");
+    const btnSubmit = document.getElementById("btn-submit");
+    const tracker = document.getElementById("question-tracker");
+    const scoreTracker = document.getElementById("score-tracker");
+    const progressBar = document.getElementById("progress-bar");
+
+    function startQuiz() {
+        const nameInput = document.getElementById("student-name").value.trim();
+        const idInput = document.getElementById("student-id").value.trim();
+        
+        if(nameInput === "" || idInput === "") {
+            alert("Please enter both Name and ID to start the quiz. / እባክዎ ስም እና መለያ ቁጥር ያስገቡ።");
+            return;
+        }
+
+        studentName = nameInput;
+        studentID = idInput;
+        
+        displayName.innerText = `Student: ${studentName}`;
+        displayID.innerText = `ID: ${studentID}`;
+        infoDisplay.classList.remove("hidden");
+
+        sRegistration.classList.add("hidden");
+        sQuiz.classList.remove("hidden");
+        sQuiz.classList.add("flex"); // Tailwind flex
+        
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const qData = questionsData[currentQuestionIndex];
+        
+        // Update trackers
+        tracker.innerText = `Question ${currentQuestionIndex + 1} / ${questionsData.length}`;
+        progressBar.style.width = `${((currentQuestionIndex + 1) / questionsData.length) * 100}%`;
+        
+        // Render text
+        qText.innerText = qData.q;
+        optionsContainer.innerHTML = "";
+        
+        const hasAnswered = userAnswers[currentQuestionIndex] !== null;
+
+        qData.opts.forEach((optText, index) => {
+            const btn = document.createElement("button");
+            btn.className = "w-full text-left p-4 rounded-lg border-2 border-gray-300 bg-gray-50 hover:bg-blue-50 focus:outline-none transition shadow-sm font-semibold";
+            btn.innerText = optText;
+            
+            if (hasAnswered) {
+                btn.classList.add("disabled-btn");
+                if (index === qData.ans) {
+                    btn.classList.add("correct-btn");
+                } else if (index === userAnswers[currentQuestionIndex]) {
+                    btn.classList.add("incorrect-btn");
+                }
+            } else {
+                btn.onclick = () => selectOption(index);
+            }
+            optionsContainer.appendChild(btn);
+        });
+
+        // Show/Hide Feedback
+        if (hasAnswered) {
+            showFeedback(userAnswers[currentQuestionIndex] === qData.ans, qData);
+        } else {
+            feedbackContainer.classList.add("hidden");
+        }
+
+        // Control Buttons
+        btnPrev.classList.toggle("hidden", currentQuestionIndex === 0);
+        
+        if (currentQuestionIndex === questionsData.length - 1) {
+            btnNext.classList.add("hidden");
+            btnSubmit.classList.remove("hidden");
+        } else {
+            btnNext.classList.remove("hidden");
+            btnSubmit.classList.add("hidden");
+        }
+    }
+
+    function selectOption(selectedIndex) {
+        if (userAnswers[currentQuestionIndex] !== null) return; // Prevent double clicking
+
+        const qData = questionsData[currentQuestionIndex];
+        const isCorrect = selectedIndex === qData.ans;
+        
+        userAnswers[currentQuestionIndex] = selectedIndex;
+
+        if(isCorrect) {
+            score++;
+            scoreTracker.innerText = `Score: ${score}`;
+        }
+
+        renderQuestion(); // Re-render to show colors and lock buttons
+    }
+
+    function showFeedback(isCorrect, qData) {
+        feedbackContainer.classList.remove("hidden", "bg-green-100", "border-green-500", "bg-red-100", "border-red-500", "text-green-800", "text-red-800");
+        
+        if(isCorrect) {
+            feedbackContainer.classList.add("bg-green-100", "border-green-500", "text-green-800");
+            feedbackStatus.innerText = "Correct! ✅ / ትክክል!";
+        } else {
+            feedbackContainer.classList.add("bg-red-100", "border-red-500", "text-red-800");
+            feedbackStatus.innerText = "Incorrect ❌ / ስህተት";
+        }
+
+        feedbackAm.innerText = qData.expAm;
+        feedbackEn.innerText = qData.expEn;
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questionsData.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function showResults() {
+        sQuiz.classList.remove("flex");
+        sQuiz.classList.add("hidden");
+        sResults.classList.remove("hidden");
+
+        const correctCount = score;
+        const incorrectCount = questionsData.length - score;
+
+        document.getElementById("final-score").innerText = `${correctCount} / ${questionsData.length}`;
+        document.getElementById("correct-count").innerText = correctCount;
+        document.getElementById("incorrect-count").innerText = incorrectCount;
+    }
+
+    function sendEmail() {
+        const correctCount = score;
+        const total = questionsData.length;
+        const percentage = ((correctCount / total) * 100).toFixed(1);
+
+        const email = "mesayferedegn2@gmail.com";
+        const subject = `Quiz Results: ${studentName} - Grade 5 Arts`;
+        const body = `Student Name: ${studentName}\nID Number: ${studentID}\n\nFinal Score: ${correctCount}/${total} (${percentage}%)\n\nThese results were auto-generated by the Grade 5 Arts Comprehensive Quiz application.`;
+        
+        // Use encodeURIComponent to handle spaces and special characters
+        window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
+
+</script>
+</body>
+</html>
